@@ -14,6 +14,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.Job;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
@@ -46,9 +47,9 @@ public class Julia {
 		conf.setBoolean("mapreduce.reduce.speculative", false);
 		Julia.x = x;
 		Julia.y = y;
-		creeFichier(x,y,"./preP"); //On créé un fichier avec x*y point pour les transmettre aux map
+		creeFichier(x,y,fichierIn); //On créé un fichier avec x*y point pour les transmettre aux map
 		Runtime run = Runtime.getRuntime();
-		Process proc = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -copyFromLocal ./preP /"});
+		Process proc = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -copyFromLocal ./"+fichierIn+" /"});
 		proc.waitFor();
 		BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		Job job = Job.getInstance(conf, "ens Julia");
@@ -59,21 +60,24 @@ public class Julia {
 		job.setOutputValueClass(ValeurPoint.class);
 		job.setPartitionerClass(MyPartitioner.class);
 		job.setNumReduceTasks(1);//Il est bien sur possible de changer cette valeur (1 par défaut)
-		FileInputFormat.addInputPath(job, new Path(fichierIn));
+		FileInputFormat.addInputPath(job, new Path("/"+fichierIn));
 		final Path outDir = new Path(fichierOut);
 		FileOutputFormat.setOutputPath(job, outDir);
 		final FileSystem fs = FileSystem.get(conf);//récupération d'une référence sur le système de fichier HDFS
 		if (fs.exists(outDir)) {
 			fs.delete(outDir, true);
 		}
+		
+		
 		//System.exit(job.waitForCompletion(true) ? 0 : 1);
 		job.waitForCompletion(true);
 		//On attends que l'utilisateur quitte la pic pour arreter le programe
 		
-		Process proc2 = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -copyToLocal /user/Steph/GOZG/part-r-00000 ./"});
+		Process proc2 = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -put -f /user/Steph/GOZG/part-r-00000 ./"});
 		proc2.waitFor();
 	}
 
+	//Méthode pour les couleurs
 	public static List<Integer> getUniqueColors(int amount) {
 		final int lowerLimit = 0x10;
 		final int upperLimit = 0xE0;    
@@ -94,6 +98,7 @@ public class Julia {
 		return colors;
 	}
 
+	//Algo de julia
 	public static int julia(double Ac , double Ab , double x , double y){
 		Complex c = new Complex(Ac,Ab);
 		Complex z = new Complex(x,y);
@@ -106,15 +111,19 @@ public class Julia {
 				z = fz;
 			}
 		}
-		return 10-1;
+		return 256-1;
 	}
 	
-	public static void creeFichier(int x,int y,String path){
-		final String chemin = "C:/tmp.txt";
-	       final File fichier =new File(path); 
+	
+	/*
+	 * Methode qui crée un fichier de taille x y, a l'endroit ./ , contenant 
+	 * x*y ligne de coordonné de point de 0 0 à x y
+	 */
+	public static void creeFichier(int x,int y,String name){
+	       final File fichier =new File("./"+name); 
 	       try {
 	           // Creation du fichier
-	           fichier .createNewFile();
+	           fichier.createNewFile();
 	           // creation d'un writer (un écrivain)
 	           final FileWriter writer = new FileWriter(fichier);
 	           try {
@@ -134,6 +143,7 @@ public class Julia {
 	}
 
 
+	// Class du map ! 
 	public static class TokenizerMapper 
 	extends Mapper<Object, Text, Text, ValeurPoint>{
 
@@ -145,23 +155,33 @@ public class Julia {
 				) throws IOException, InterruptedException {
 			
 			
+			// On parse la ligne du map 
 			StringTokenizer itr = new StringTokenizer(value.toString());
+			// point de coordoné X
 			int i = Integer.parseInt(itr.nextToken());
+			// point de coordoné Y
 			int j = Integer.parseInt(itr.nextToken());
+			
+			//On calcul la couleur du point a l'aide de l'algo
 			double x = xmin +  i * width / Julia.x;
 			double y = ymin + j * height / Julia.y;
 			int julia =  julia(real,imag,x,y);
-			//res.set(julia);
+
+			//On stoque le résultat dans un objet qui implements Writable
 			res.setColor(julia);
 			res.setX(i);
 			res.setY(j);
+			
+			//On met la meme clé pour que que toutes les valeurs aillent dans 
+			//le meme réduce (pseudo distribued) 
 			word.set("oneKey");
 			context.write(word, res);
 		}
 	}
 
 
-
+	
+	//Classe du réduce
 	public static class IntSumReducer 
 	extends Reducer<Text,ValeurPoint,Text,ValeurPoint> {
 		private ValeurPoint result = new ValeurPoint();
@@ -169,19 +189,20 @@ public class Julia {
 		public void reduce(Text key, Iterable<ValeurPoint> values, 
 				Context context
 				) throws IOException, InterruptedException {
+			//On crée l'objet picture qui va dessiner l'image
 			pic = new Picture(Julia.x, Julia.y);
+			
+			//Pour tous les points, on les ajoute a la structure 
 			for (ValeurPoint val : values) {
 				pic.set(val.getX(), val.getY(), new Color(colors.get(val.getColor())));
 			}
 			
+			//On affiche le résulat 
 			pic.show();
 			
-			//context.write(key, result); useless pour nous
+			//context.write(key, result); useless pour nous d'écrir un fichier avec le resu
 
 		}
 	}
 	
-	
-
-
 }
