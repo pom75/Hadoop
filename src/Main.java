@@ -1,6 +1,9 @@
 
 import java.io.IOException;
 
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+
 import javax.swing.JFrame;
 
 import org.apache.hadoop.util.GenericOptionsParser;
@@ -26,6 +29,7 @@ public class Main {
 		f.setLocationRelativeTo(null);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.pack();
+		MakeSound.playSound("Nanarland.wav");
 		f.show();
 	}
 }
