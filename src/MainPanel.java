@@ -43,9 +43,11 @@ public class MainPanel extends JPanel {
 		JPanel p1 = new JPanel();
 		l2 = new JLabel("Width");
 		f1  =  new JTextField(8);
+		f1.setText("500");
 
 		l6 = new JLabel("Length");
 		f2 = new JTextField(8);
+		f2.setText("500");
 		p1.add(l2);
 		p1.add(f1);
 		p1.add(l6);
@@ -59,6 +61,7 @@ public class MainPanel extends JPanel {
 
 		l4 = new JLabel("Real");
 		f3 = new JTextField(8);
+		f3.setText("-0.8");
 		p2.add(l4);
 		p2.add(f3);
 		mp1.add(p2);
@@ -66,6 +69,7 @@ public class MainPanel extends JPanel {
 
 		l5 = new JLabel("Imaginary");
 		f4 = new JTextField(8);
+		f4.setText("-0.2");
 		p2.add(l5);
 		p2.add(f4);
 
