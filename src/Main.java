@@ -1,8 +1,6 @@
 
 import java.io.IOException;
-
-import javafx.scene.media.Media;
-import javafx.scene.media.MediaPlayer;
+import java.net.URL;
 
 import javax.swing.JFrame;
 
@@ -23,13 +21,15 @@ public class Main {
 		
 		in = otherArgs[0];
 		out = otherArgs[1];
-		
+	
 		JFrame f = new JFrame();
 		f.add(new MainPanel());
 		f.setLocationRelativeTo(null);
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.pack();
-		MakeSound.playSound("Nanarland.wav");
+		
+		
+		new MakeSound().playSound();
 		f.show();
 	}
 }
