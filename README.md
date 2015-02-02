@@ -24,6 +24,8 @@ out : dossier dans hdfs ou vont etre cree les fichiers de sortie
 Les fichiers de sortie ne seront pas ecrase, si il existe deja , aucun fichier ne
 sera recupere.
 
++ Vous pouvez mettre du son pour une expérience encore plus agréable
+
 
 
 # Screen

@@ -57,7 +57,7 @@ public class Julia {
 		}
 
 		job.waitForCompletion(true);
-		
+		new MakeSound().playSound();
 		Process proc2 = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -get ./"+fichierOut+"/part-r-00000 ./"});
 		proc2.waitFor();
 		Process proc3 = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -get ./"+fichierOut+"/part-r-00001 ./"});
