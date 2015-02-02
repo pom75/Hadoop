@@ -19,7 +19,9 @@ public class Main {
 			System.exit(2);
 		}
 		
+		//nom du fichier d'entré 
 		in = otherArgs[0];
+		//Nom du fichier de sortie
 		out = otherArgs[1];
 	
 		JFrame f = new JFrame();

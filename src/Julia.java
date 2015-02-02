@@ -23,33 +23,30 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.util.GenericOptionsParser;
 
 public class Julia {
-	static public double real = -0.8;
-	static public double imag = -0.4;
-	public Complex c = new Complex(real, imag); 
 	static double xmin   = -2.0;
 	static double ymin   = -2.0;
 	static double width  =  4.0;
 	static double height =  4.0;
-	static int x = 1000;
-	static int y = 1000;
-	static Picture pic;
-	static boolean test = true;
-	public static List<Integer> colors;
 
-
-	public static void mainJulia(String fichierIn, String fichierOut, int x, int y, int color, double real,double imag) throws Exception {
+	public static void mainJulia(String fichierIn, String fichierOut, int x, int y, int color, float real,float imag) throws Exception {
 		
 
-		colors = getUniqueColors(256);
 
 		Configuration conf = new Configuration();
 		conf.setBoolean("mapreduce.map.speculative", false);
 		conf.setBoolean("mapreduce.reduce.speculative", false);
-		Julia.x = x;
-		Julia.y = y;
+		
+		//On stock les variable "global"
+		conf.setInt("x", x);
+		conf.setInt("y", y);
+		conf.setFloat("r", real);
+		conf.setFloat("i", imag);
+		
 		creeFichier(x,y,fichierIn); //On créé un fichier avec x*y point pour les transmettre aux map
 		Runtime run = Runtime.getRuntime();
-		Process proc = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -copyFromLocal ./"+fichierIn+" /"});
+		//Process proc2 = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -rmr ./"});
+		//proc2.waitFor();
+		Process proc = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -put -f ./"+fichierIn+" /"});
 		proc.waitFor();
 		BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		Job job = Job.getInstance(conf, "ens Julia");
@@ -73,8 +70,7 @@ public class Julia {
 		job.waitForCompletion(true);
 		//On attends que l'utilisateur quitte la pic pour arreter le programe
 		
-		Process proc2 = run.exec(new String[]{"/bin/sh", "-c", "hdfs dfs -put -f /user/Steph/GOZG/part-r-00000 ./"});
-		proc2.waitFor();
+		
 	}
 
 	//Méthode pour les couleurs
@@ -155,6 +151,7 @@ public class Julia {
 				) throws IOException, InterruptedException {
 			
 			
+			
 			// On parse la ligne du map 
 			StringTokenizer itr = new StringTokenizer(value.toString());
 			// point de coordoné X
@@ -162,9 +159,17 @@ public class Julia {
 			// point de coordoné Y
 			int j = Integer.parseInt(itr.nextToken());
 			
+			
+			//On recupere les variable "global"
+			Configuration conf = context.getConfiguration();
+			float real = conf.getFloat("r", 0);
+			float imag = conf.getFloat("i", 0);
+			int xMax = conf.getInt("x", 0);
+			int yMax = conf.getInt("y", 0);
+			
 			//On calcul la couleur du point a l'aide de l'algo
-			double x = xmin +  i * width / Julia.x;
-			double y = ymin + j * height / Julia.y;
+			double x = xmin +  i * width / xMax;
+			double y = ymin + j * height / yMax;
 			int julia =  julia(real,imag,x,y);
 
 			//On stoque le résultat dans un objet qui implements Writable
@@ -189,12 +194,23 @@ public class Julia {
 		public void reduce(Text key, Iterable<ValeurPoint> values, 
 				Context context
 				) throws IOException, InterruptedException {
+			
+			//On recuepre les variables "gloables qui nous interesse
+			Configuration conf = context.getConfiguration();
+			int xMax = conf.getInt("x", 0);
+			int yMax = conf.getInt("y", 0);
+			
+			//On crée la liste des couleurs
+			List<Integer> colors = getUniqueColors(256);
+			
+			
 			//On crée l'objet picture qui va dessiner l'image
-			pic = new Picture(Julia.x, Julia.y);
+			Picture pic = new Picture(xMax, yMax);
+			
 			
 			//Pour tous les points, on les ajoute a la structure 
-			for (ValeurPoint val : values) {
-				pic.set(val.getX(), val.getY(), new Color(colors.get(val.getColor())));
+			for (ValeurPoint val2 : values) {
+				pic.set(val2.getX(), val2.getY(), new Color(colors.get(val2.getColor())));
 			}
 			
 			//On affiche le résulat 

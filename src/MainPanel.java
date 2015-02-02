@@ -114,8 +114,8 @@ public class MainPanel extends JPanel {
 		try{
 			int width  = Integer.valueOf(f1.getText());
 			int length = Integer.valueOf(f2.getText());
-			Double read = Double.valueOf(f3.getText());
-			Double img = Double.valueOf(f4.getText());
+			float read = Float.valueOf(f3.getText());
+			float img = Float.valueOf(f4.getText());
 			int colors = Integer.valueOf(f5.getText());
 
 			try {
