@@ -1,4 +1,6 @@
-
+package ihm;
+import main.*;
+import hadoop.Julia;
 
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;

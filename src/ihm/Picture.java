@@ -1,3 +1,4 @@
+package ihm;
 
 
 import java.awt.Color;

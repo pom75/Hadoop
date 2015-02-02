@@ -1,3 +1,6 @@
+package main;
+
+import ihm.MainPanel;
 
 import java.io.IOException;
 import java.net.URL;
@@ -6,10 +9,12 @@ import javax.swing.JFrame;
 
 import org.apache.hadoop.util.GenericOptionsParser;
 
+import tools.MakeSound;
+
 public class Main {
 	
-	static String in ="";
-	static String out ="";
+	static public String in ="";
+	static public String out ="";
 	
 	public static void main(String args[]) throws IOException{
 		

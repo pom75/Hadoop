@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jar destfile="build/main/checksites.jar">
+  <fileset dir="build/main/classes"/>
+  <zipfileset includes="**/*.class" src="lib/main/some.jar"/>
+  <manifest>
+    <attribute name="Main" value="com.acme.checksites.Main"/>
+  </manifest>
+</jar>
