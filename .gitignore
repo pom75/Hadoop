@@ -1,0 +1,9 @@
+Archives*/
+*.class
+Cours/
+TP/
+*.DS_Store
+*.settings
+build/*
+bin/*
+/target/
