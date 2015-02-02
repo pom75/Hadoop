@@ -36,7 +36,7 @@ public class Main {
 		f.pack();
 		
 		
-		new MakeSound().playSound();
+		//new MakeSound().playSound();
 		f.show();
 	}
 }

@@ -12,10 +12,10 @@ import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Reducer;
 
 	public class IntSumReducer 
-	extends Reducer<Text,ValeurPoint,Text,ValeurPoint> {
+	extends Reducer<MyKey,ValeurPoint,MyKey,ValeurPoint> {
 		private ValeurPoint result = new ValeurPoint();
 
-		public void reduce(Text key, Iterable<ValeurPoint> values, 
+		public void reduce(MyKey key, Iterable<ValeurPoint> values, 
 				Context context
 				) throws IOException, InterruptedException {
 			
@@ -23,9 +23,10 @@ import org.apache.hadoop.mapreduce.Reducer;
 			Configuration conf = context.getConfiguration();
 			int xMax = conf.getInt("x", 0);
 			int yMax = conf.getInt("y", 0);
+			int color = conf.getInt("color", 0);
 			
 			//On crée la liste des couleurs
-			List<Integer> colors = getUniqueColors(256);
+			List<Integer> colors = getUniqueColors(color);
 			
 			
 			//On crée l'objet picture qui va dessiner l'image
@@ -33,14 +34,29 @@ import org.apache.hadoop.mapreduce.Reducer;
 			
 			
 			//Pour tous les points, on les ajoute a la structure 
-			for (ValeurPoint val2 : values) {
-				pic.set(val2.getX(), val2.getY(), new Color(colors.get(val2.getColor())));
+			if(key.getDirection() > 0 ){
+				for (ValeurPoint val2 : values) {
+					pic.set(val2.getX(), val2.getY(), new Color(colors.get(val2.getColor())));
+					val2.setColor(colors.get(val2.getColor()));
+					context.write(key, val2);
+				}
+			}else{
+				for (ValeurPoint val2 : values) {
+					Color c = new Color(colors.get(val2.getColor()));
+					int red = (int) (c.getRed() * 0.299);
+					int green =(int) (c.getGreen() * 0.587);
+					int blue = (int) (c.getBlue() *0.114);
+					pic.set(val2.getX(), val2.getY(), new Color(red+green+blue,red+green+blue,red+green+blue));
+					val2.setColor(red+green+blue);
+					context.write(key, val2);
+				}
+				
 			}
 			
 			//On affiche le résulat 
 			pic.show();
 			
-			//context.write(key, result); useless pour nous d'écrir un fichier avec le resu
+			 
 
 		}
 		

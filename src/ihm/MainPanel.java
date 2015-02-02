@@ -121,7 +121,7 @@ public class MainPanel extends JPanel {
 			int colors = Integer.valueOf(f5.getText());
 
 			try {
-				Julia.mainJulia(Main.in, Main.out, width, length, colors, read, img);
+				Julia.mainJulia(Main.in, Main.out, width, length, colors, read, img, Main.out);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

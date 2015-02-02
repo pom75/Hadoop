@@ -62,6 +62,10 @@ public class ValeurPoint implements Writable {
 		arg0.writeInt(this.color);
 		
 	}
+	
+	public String toString(){
+		return "X : "+x+", Y : "+y+", Color : "+color;
+	}
 
 
 }
